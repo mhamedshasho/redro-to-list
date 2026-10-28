@@ -37,7 +37,7 @@ input,textarea,select{box-shadow:inset 0 3px 8px #0003,0 3px 0 #09090d}
 @media(prefers-reduced-motion:reduce){.bigblock,.smallblock,.mark,.modal{transform:none!important}}
 
 /* Actual WebGL 3D workspace */
-body.world3d-ready #blockboard{display:none!important}
+/* Keep the functional task controls available below the 3D view as a permanent fallback. */
 .world3d{position:relative;margin:8px 0 30px;min-width:0;perspective:1200px;border:1px solid #41404e;border-radius:26px;overflow:hidden;background:linear-gradient(160deg,#22212d 0%,#121219 52%,#0a0a10 100%);box-shadow:0 12px 0 #08080c,0 28px 55px #0008,inset 0 1px #ffffff18}
 .world3d:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,#50324c55,transparent 58%),linear-gradient(125deg,#ffffff07,transparent 40%);z-index:0}
 .worldhud{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:20px 22px 12px}
@@ -76,7 +76,7 @@ let world3dApi=null,world3dStarted=false,world3dBusy=false,world3dStartScheduled
 function schedule3DWorld(){if(world3dStarted||world3dBusy||world3dStartScheduled)return;world3dStartScheduled=true;setTimeout(()=>{world3dStartScheduled=false;start3DWorld()},900)}
 /* Keep the 3D toolbar functional even if the external physics libraries fail to load. */
 $('worldAddGroup').onclick=()=>$('addCategory').click();
-$('worldAddTask').onclick=()=>openModal(null,activeCategory);
+$('worldAddTask').onclick=()=>{notify(tr('Opening task creator'));openModal(null,activeCategory)};
 $('worldReset').onclick=()=>{
  if(world3dApi){world3dApi.camera.position.set(9,10,13);world3dApi.controls.target.set(0,1,0);world3dApi.controls.update()}
  else {const loading=$('worldLoading');if(loading)loading.textContent=tr('Loading 3D engine…');start3DWorld()}
@@ -91,7 +91,7 @@ async function start3DWorld(){
    import('https://esm.sh/cannon-es@0.20.0?bundle'),
    import('https://esm.sh/three@0.170.0/examples/jsm/controls/OrbitControls.js?bundle')
   ]);
-  const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('3D engine load timed out')),12000));
+  const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('3D engine load timed out')),8000));
   const [THREE,CANNON,controlsModule]=await Promise.race([modulesPromise,timeoutPromise]);
   const {OrbitControls}=controlsModule;
   const scene=new THREE.Scene();scene.background=new THREE.Color('#11111a');scene.fog=new THREE.Fog('#11111a',16,42);
@@ -184,7 +184,7 @@ async function start3DWorld(){
    }
   }
   renderer.domElement.addEventListener('pointerup',endDrag);renderer.domElement.addEventListener('pointercancel',endDrag);
-  $('worldAddGroup').onclick=()=>$('addCategory').click();
+  $('worldAddGroup').onclick=()=>{notify(tr('Opening group creator'));$('addCategory').click()};
   $('worldAddTask').onclick=()=>{const chosen=selectedMesh?.userData?.type==='group'?selectedMesh.userData.id.slice(6):null;openModal(null,chosen)};
   $('worldReset').onclick=()=>{camera.position.set(9,10,13);controls.target.set(0,1,0);controls.update()};
   function animate(now){

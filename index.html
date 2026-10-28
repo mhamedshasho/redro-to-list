@@ -86,7 +86,7 @@ async function start3DWorld(){
   const {OrbitControls}=controlsModule;
   const scene=new THREE.Scene();scene.background=new THREE.Color('#11111a');scene.fog=new THREE.Fog('#11111a',16,42);
   const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(9,10,13);
-  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;host.appendChild(renderer.domElement);
+  const renderer=new THREE.WebGLRenderer({antialias:(window.devicePixelRatio||1)<=1.25,alpha:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.35));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;host.appendChild(renderer.domElement);
   const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,1,0);controls.enableDamping=true;controls.dampingFactor=.075;controls.minDistance=6;controls.maxDistance=26;controls.maxPolarAngle=Math.PI*.48;controls.minPolarAngle=.12;
   const world=new CANNON.World({gravity:new CANNON.Vec3(0,-18,0)});world.allowSleep=true;world.broadphase=new CANNON.SAPBroadphase(world);world.solver.iterations=12;
   world.defaultContactMaterial.friction=.62;world.defaultContactMaterial.restitution=.08;
@@ -94,7 +94,7 @@ async function start3DWorld(){
   const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshStandardMaterial({color:'#20202d',roughness:.88,metalness:.12}));floor.rotation.x=-Math.PI/2;floor.position.y=-.18;floor.receiveShadow=true;scene.add(floor);
   const grid=new THREE.GridHelper(60,60,'#51455d','#302d3c');grid.position.y=-.165;grid.material.transparent=true;grid.material.opacity=.48;scene.add(grid);
   const hemi=new THREE.HemisphereLight('#d9dcff','#342332',2.1);scene.add(hemi);
-  const key=new THREE.DirectionalLight('#fff0e6',3.5);key.position.set(-7,13,8);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=-18;key.shadow.camera.right=18;key.shadow.camera.top=18;key.shadow.camera.bottom=-18;key.shadow.bias=-.0003;scene.add(key);
+  const key=new THREE.DirectionalLight('#fff0e6',3.5);key.position.set(-7,13,8);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.camera.left=-18;key.shadow.camera.right=18;key.shadow.camera.top=18;key.shadow.camera.bottom=-18;key.shadow.bias=-.0003;scene.add(key);
   const rim=new THREE.PointLight('#6f6bff',38,28);rim.position.set(8,7,-7);scene.add(rim);
   const fill=new THREE.PointLight('#ff435a',18,22);fill.position.set(-8,4,-3);scene.add(fill);
   const objects=new Map(),raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let selectedMesh=null,dragging=null,dragPlaneY=0,dragOffset=new THREE.Vector3(),pointerStart={x:0,y:0},didMove=false,lastTime=performance.now(),raf=0,disposed=false;
@@ -179,7 +179,7 @@ async function start3DWorld(){
   $('worldReset').onclick=()=>{camera.position.set(9,10,13);controls.target.set(0,1,0);controls.update()};
   function animate(now){
    if(disposed)return;raf=requestAnimationFrame(animate);const dt=Math.min((now-lastTime)/1000,.04);lastTime=now;
-   if(dt>0)world.step(1/60,dt,3);controls.update();
+   if(document.hidden){lastTime=now;return;}if(dt>0)world.step(1/60,dt,3);controls.update();
    for(const o of objects.values()){if(o!==dragging){o.mesh.position.copy(o.body.position);o.mesh.quaternion.copy(o.body.quaternion)}}
    renderer.render(scene,camera);
   }

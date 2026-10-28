@@ -87,6 +87,11 @@ body.light .world3d{background:linear-gradient(160deg,#e7e5f1,#d8d7e7 55%,#c9c9d
 <section class="section"><div class="head"><div><p class="eyebrow">PLAN AHEAD</p><h2>Pick your day</h2></div><button class="subbtn" id="todayBtn">Today ↗</button></div><div class="days" id="days"></div></section>
 <section id="world3d" class="world3d" aria-label="2D task world">
   <div class="worldhud"><div><span class="worldeyebrow">REDRO TASK WORKSPACE</span><h2 id="worldTitle">Your tasks</h2><p id="worldHelp">Keep big blocks, medium blocks, and tasks organized.</p></div><div class="worldactions"><button id="worldAddGroup" class="worldbtn">＋ Big cube</button><button id="worldAddMedium" class="worldbtn">＋ Medium</button><button id="worldAddTask" class="worldbtn primary">＋ Task cube</button><button id="worldReset" class="worldbtn" title="Reset blocks">↻</button></div></div>
+  <div class="workspace-search" role="search">
+    <span class="workspace-search-icon" aria-hidden="true">⌕</span>
+    <input id="workspaceSearch" type="search" placeholder="Search tasks, groups, and subgroups..." aria-label="Search tasks, groups, and subgroups" autocomplete="off" spellcheck="false">
+    <button id="clearWorkspaceSearch" type="button" aria-label="Clear search" title="Clear search" hidden>×</button>
+  </div>
   <div id="worldCanvas" class="worldcanvas"><div class="worldloading" id="worldLoading">Loading your tasks…</div></div>
   <div class="worldfooter"><span id="worldPhysics">Organized list view</span><span id="worldCounts">0 groups · 0 tasks</span></div>
 </section><section class="blockboard" id="blockboard"><div class="boardhead"><div><h2>Your blocks</h2><p class="boardhint">Drag a task block into a category. Tap a category to open it.</p></div><button class="redbtn" id="addCategory">＋ Big block</button></div><div id="categoryBoard" class="blockgrid"></div><div id="categoryDetail" class="boardpanel hidden"></div><div id="loosePanel" class="boardpanel"><div class="boardpanelhead"><h3>Loose task blocks</h3><span id="looseCount" class="boardtiny">0 tasks</span><button class="subbtn" id="addBlockTask">＋ Task block</button></div><div class="dropzone loosezone" id="looseDrop"><strong>Drop tasks here</strong><span>Drag a task out of a category to move it here</span></div><div id="looseBlocks" class="blocksmallgrid"></div></div></section><section class="section" id="classicList"><div class="head"><div><p class="eyebrow">YOUR LIST</p><h2 id="listTitle">All tasks</h2></div><button class="subbtn" id="backup">Backup ↓</button></div><div class="tools"><input class="search" id="search" type="search" placeholder="⌕  Search tasks..."><button class="subbtn" id="add">＋ Add task</button></div><div class="filters" id="filters"><button class="chip active" data-filter="all">All tasks</button><button class="chip" data-filter="active">To do</button><button class="chip" data-filter="completed">Completed</button></div><div class="list" id="list"></div><div class="empty hidden" id="empty"><div style="font-size:30px">✓</div><h3>A fresh start.</h3><p>Add a task and make today count.</p><button class="redbtn" id="emptyAdd">＋ Add your first task</button></div></section>
@@ -129,15 +134,30 @@ Object.assign(translations,{
   "big blocks":"مجموعات رئيسية","medium blocks":"مجموعات فرعية",
   "Write the task here. No separate title needed.":"اكتب المهمة التي تريد إنجازها هنا. لا حاجة إلى عنوان منفصل."
 });
+Object.assign(translations,{
+  "Search tasks, groups, and subgroups...":"ابحث عن المهام والمجموعات والمجموعات الفرعية...",
+  "Search tasks, groups, and subgroups":"ابحث عن المهام والمجموعات والمجموعات الفرعية",
+  "Clear search":"مسح البحث","Search results":"نتائج البحث","Tasks":"المهام","results":"نتائج",
+  "No matching tasks or groups found.":"لم يتم العثور على مهام أو مجموعات مطابقة.",
+  "Search by task, group, or subgroup name. Task details are included.":"ابحث باسم المهمة أو المجموعة أو المجموعة الفرعية، ويشمل البحث تفاصيل المهام."
+});
 const reverseTranslations=Object.fromEntries(Object.entries(translations).map(([en,ar])=>[ar,en]));
 const tr=s=>{const en=reverseTranslations[s]||s;return localStorage.getItem('redro-language')==='ar'?(translations[en]??s):en};
 function applyLanguage(){const lang=localStorage.getItem('redro-language')||'en';document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.body.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('body *:not(script):not(style)').forEach(el=>{if(el.closest('#list'))return;for(const node of el.childNodes){if(node.nodeType===Node.TEXT_NODE&&node.nodeValue.trim()){const lead=node.nodeValue.match(/^\s*/)?.[0]||'',trail=node.nodeValue.match(/\s*$/)?.[0]||'',raw=node.nodeValue.trim(),en=reverseTranslations[raw]||raw;node.nodeValue=lead+(lang==='ar'?(translations[en]??raw):en)+trail}}});document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{const en=reverseTranslations[el.placeholder]||el.placeholder;el.placeholder=lang==='ar'?(translations[en]??el.placeholder):en});document.querySelectorAll('option').forEach(el=>{const en=reverseTranslations[el.textContent]||el.textContent;el.textContent=lang==='ar'?(translations[en]??en):en});document.querySelectorAll('[title],[aria-label]').forEach(el=>{for(const attr of ['title','aria-label']){if(!el.hasAttribute(attr))continue;const raw=el.getAttribute(attr),en=reverseTranslations[raw]||raw;el.setAttribute(attr,lang==='ar'?(translations[en]??raw):en)}});$('language').value=lang;}
 let categories=(()=>{try{return JSON.parse(localStorage.getItem('redro-categories')||'null')||[{id:'school',name:'School',emoji:'📚',color:'#5b8def'},{id:'housework',name:'Housework',emoji:'🏠',color:'#45c98a'},{id:'personal',name:'Personal',emoji:'⭐',color:'#e12b3a'}]}catch{return []}})(),activeCategory=null,draggedTaskId=null,draggedCategoryId=null;const saveCategories=()=>localStorage.setItem('redro-categories',JSON.stringify(categories));const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},fmt=s=>new Date(s+'T12:00:00').toLocaleDateString(localStorage.getItem('redro-language')==='ar'?'ar':'en',{month:'short',day:'numeric'}),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);let tasks=[],selected=today(),filter='all',view='all',editing=null,newTaskCategoryId=null,newTaskMediumId=null,db=null;const dbReady=new Promise((resolve,reject)=>{if(!('indexedDB'in window)){resolve(null);return}const req=indexedDB.open('RedroTodoDB',1);req.onupgradeneeded=()=>req.result.createObjectStore('tasks',{keyPath:'id'});req.onsuccess=()=>{db=req.result;resolve(db)};req.onerror=()=>resolve(null)});async function load(){await dbReady;if(db){tasks=await new Promise(resolve=>{const r=db.transaction('tasks').objectStore('tasks').getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>resolve([])})}else{try{tasks=JSON.parse(localStorage.getItem('redro-tasks')||'[]')}catch{tasks=[]}}render()}async function persist(){await dbReady;if(db){const tx=db.transaction('tasks','readwrite'),store=tx.objectStore('tasks');store.clear();tasks.forEach(t=>store.put(t));await new Promise(r=>tx.oncomplete=r)}else localStorage.setItem('redro-tasks',JSON.stringify(tasks));$('saved').textContent='Saved';render()}function notify(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=> $('toast').classList.add('hidden'),2200)}
 /* Redro To-Do organized workspace: no physics, canvas, or drag simulation. */
-let expandedCategoryId=null,expandedMediumId=null;
+let expandedCategoryId=null,expandedMediumId=null,workspaceQuery='';
 let mediumBlocks=(()=>{try{return JSON.parse(localStorage.getItem('redro-medium-blocks')||'[]')}catch{return []}})();
 const saveMediumBlocks=()=>localStorage.setItem('redro-medium-blocks',JSON.stringify(mediumBlocks));
 const workspace=$('worldCanvas');
+const workspaceSearchInput=$('workspaceSearch');
+const clearWorkspaceSearchButton=$('clearWorkspaceSearch');
+function normalizeWorkspaceSearch(value){return String(value??'').normalize('NFKC').replace(/[\u0640\u064B-\u065F\u0670\u06D6-\u06ED]/g,'').toLocaleLowerCase().trim()}
+function clearWorkspaceSearch(){workspaceQuery='';workspaceSearchInput.value='';clearWorkspaceSearchButton.hidden=true}
+workspaceSearchInput.addEventListener('input',()=>{workspaceQuery=workspaceSearchInput.value.trim();clearWorkspaceSearchButton.hidden=!workspaceQuery;renderWorkspace()});
+clearWorkspaceSearchButton.addEventListener('click',()=>{clearWorkspaceSearch();renderWorkspace();workspaceSearchInput.focus()});
+workspaceSearchInput.addEventListener('keydown',e=>{if(e.key==='Escape'&&workspaceSearchInput.value){clearWorkspaceSearch();renderWorkspace()}});
+
 workspace.innerHTML='';
 workspace.classList.add('workspace-list');
 const workspaceStyle=document.createElement('style');
@@ -257,6 +277,35 @@ body.light .worldfooter{background:transparent}
 `;
 document.head.append(polishStyle);
 
+const comfortStyle=document.createElement('style');
+comfortStyle.textContent=`
+/* Softer, lower-glare color themes and gentle interaction feedback */
+:root{--red:#b94a54;color-scheme:dark}
+body:not(.light){--bg:#191a1d;--panel:#232529;--panel2:#2a2d32;--text:#e5e3de;--muted:#b1aea7;--line:#3b3c40;--shadow:0 14px 36px #0003;background:#191a1d;color-scheme:dark}
+body.light{--bg:#f5f2eb;--panel:#fffdf9;--panel2:#f6f3ec;--text:#302e2b;--muted:#726f69;--line:#e5dfd5;--red:#b94a54;--shadow:0 14px 34px #40382e12;background:#f5f2eb;color-scheme:light}
+body.light .world3d{background:var(--panel);border-color:var(--line);box-shadow:var(--shadow)}
+.workspace-search{display:flex;align-items:center;gap:9px;min-height:50px;margin:2px 14px 2px;padding:0 12px;border:1px solid var(--line);border-radius:15px;background:var(--panel);transition:border-color .18s,box-shadow .18s}
+.workspace-search:focus-within{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb,var(--red),transparent 82%)}
+.workspace-search-icon{font-size:23px;line-height:1;color:var(--muted)}
+.workspace-search input{flex:1;min-width:0;min-height:46px;border:0!important;outline:0!important;box-shadow:none!important;background:transparent;color:var(--text);padding:8px 2px;font-size:14px}
+.workspace-search input::placeholder{color:var(--muted);opacity:.85}
+.workspace-search button{width:36px;height:36px;min-width:36px;min-height:36px;padding:0;border:0;border-radius:50%;background:var(--panel2);color:var(--muted);font-size:19px}
+.workspace-search button[hidden]{display:none!important}
+.workspace-search button:hover{color:var(--text);background:var(--panel2)}
+.workspace-folder,.workspace-task,.workspace-empty{animation:redroFadeIn .22s ease both}
+.workspace-folder,.workspace-task{transition:background .18s,border-color .18s,box-shadow .18s,transform .18s}
+.workspace-check:checked{animation:redroCheckPop .2s ease-out}
+.workspace-addrow button:active,.workspace-task-tools button:active,.workspace-card-tools button:active{transform:scale(.97)}
+@keyframes redroFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes redroCheckPop{0%{transform:scale(.88)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
+body[dir=rtl] .workspace-search{direction:rtl}
+body[dir=rtl] .workspace-search input{text-align:right}
+@media(max-width:600px){.workspace-search{margin:0 10px 2px;min-height:48px}.workspace-search input{min-height:44px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.workspace-folder,.workspace-task,.workspace-empty,.workspace-check:checked{animation:none!important}.workspace-search,.workspace-folder,.workspace-task{transition:none!important}}
+`;
+document.head.append(comfortStyle);
+
+
 function renderWorkspace(){
  const view=document.createElement('div');view.className='workspace-view';
  const head=document.createElement('div');head.className='workspace-toolbar';
@@ -281,9 +330,9 @@ function renderWorkspace(){
   const sub=document.createElement('span');sub.className='workspace-folder-meta';sub.textContent=meta;
   textBox.append(title,sub);main.append(badge,textBox);main.onclick=open;card.append(main);
   const tools=document.createElement('div');tools.className='workspace-card-tools';
-  const rename=document.createElement('button');rename.type='button';rename.textContent='✎';rename.title=tr('Rename');rename.setAttribute('aria-label',tr('Rename'));rename.onclick=edit;
-  const del=document.createElement('button');del.type='button';del.textContent='×';del.title=tr('Delete');del.setAttribute('aria-label',tr('Delete'));del.onclick=remove;
-  tools.append(rename,del);card.append(tools);cards.append(card);
+  if(edit){const rename=document.createElement('button');rename.type='button';rename.textContent='✎';rename.title=tr('Rename');rename.setAttribute('aria-label',tr('Rename'));rename.onclick=edit;tools.append(rename)}
+  if(remove){const del=document.createElement('button');del.type='button';del.textContent='×';del.title=tr('Delete');del.setAttribute('aria-label',tr('Delete'));del.onclick=remove;tools.append(del)}
+  if(tools.childElementCount)card.append(tools);cards.append(card);
  };
  const taskCard=(t)=>{
   const card=document.createElement('article');card.className='workspace-task'+(t.done?' done':'');
@@ -299,6 +348,37 @@ function renderWorkspace(){
   tools.append(edit);card.append(check,body,tools);return card;
  };
  const empty=(message)=>{const e=document.createElement('div');e.className='workspace-empty';e.textContent=message;view.append(e)};
+ if(workspaceQuery){
+  const query=normalizeWorkspaceSearch(workspaceQuery);
+  const categoryById=new Map(categories.map(item=>[item.id,item]));
+  const mediumById=new Map(mediumBlocks.map(item=>[item.id,item]));
+  const matches=(value)=>normalizeWorkspaceSearch(value).includes(query);
+  const foundCategories=categories.filter(item=>matches(item.name));
+  const foundMediums=mediumBlocks.filter(item=>matches(item.name));
+  const foundTasks=tasks.filter(item=>matches([item.title,item.notes,categoryById.get(item.categoryId)?.name,mediumById.get(item.mediumId)?.name].filter(Boolean).join(' ')));
+  const openCategory=(cat)=>{clearWorkspaceSearch();expandedCategoryId=cat.id;expandedMediumId=null;renderWorkspace();workspaceSearchInput.focus()};
+  const openMedium=(medium)=>{clearWorkspaceSearch();expandedCategoryId=medium.categoryId||null;expandedMediumId=medium.id;renderWorkspace();workspaceSearchInput.focus()};
+  path.textContent=tr('Search results');
+  if(foundCategories.length){
+   section(tr('Groups')+' · '+foundCategories.length);
+   foundCategories.forEach(cat=>folder(cat.name,tasks.filter(t=>t.categoryId===cat.id).length+' '+tr('tasks'),'▦',cat.color,()=>openCategory(cat),null,null));
+   view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
+  }
+  if(foundMediums.length){
+   section(tr('Subgroups')+' · '+foundMediums.length);
+   foundMediums.forEach(medium=>folder(medium.name,tasks.filter(t=>t.mediumId===medium.id).length+' '+tr('tasks'),'▰',medium.color,()=>openMedium(medium),null,null));
+   view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
+  }
+  if(foundTasks.length){section(tr('Tasks')+' · '+foundTasks.length);foundTasks.forEach(task=>view.append(taskCard(task)))}
+  const resultCount=foundCategories.length+foundMediums.length+foundTasks.length;
+  if(!resultCount)empty(tr('No matching tasks or groups found.'));
+  workspace.replaceChildren(view);
+  $('worldTitle').textContent=tr('Search results');
+  $('worldHelp').textContent=tr('Search by task, group, or subgroup name. Task details are included.');
+  $('worldCounts').textContent=resultCount+' '+tr('results');
+  $('worldPhysics').textContent=tr('Search results');
+  return;
+ }
  if(!expandedCategoryId&&!expandedMediumId){
   section(tr('Groups'));
   categories.forEach(cat=>folder(cat.name,tasks.filter(t=>t.categoryId===cat.id).length+' '+tr('tasks'),'▦',cat.color,()=>{expandedCategoryId=cat.id;renderWorkspace()},()=>{const n=prompt(tr('Group name'),cat.name);if(n&&n.trim()){cat.name=n.trim();saveCategories();renderWorkspace()}},async()=>{if(!confirm(tr('Delete this group? Its tasks will become unsorted.')))return;tasks.forEach(t=>{if(t.categoryId===cat.id){delete t.categoryId;delete t.mediumId}});mediumBlocks.forEach(m=>{if(m.categoryId===cat.id)m.categoryId=null});saveMediumBlocks();categories=categories.filter(c=>c.id!==cat.id);saveCategories();await persist();renderWorkspace()}));

@@ -98,7 +98,7 @@ function rebuildPhysics(){
  const old=new Map(bodies.map(b=>[b.id,b]));const next=[];
  categories.forEach((cat,i)=>{const id='group:'+cat.id,prev=old.get(id),w=132,h=66;next.push({...prev,id,type:'group',label:cat.name,emoji:cat.emoji,color:cat.color,categoryId:cat.id,w,h,x:prev?.x??(12+(i%2)*(physicsW*.48)),y:prev?.y??(24+Math.floor(i/2)*84),vx:prev?.vx??0,vy:prev?.vy??0,static:false});});
  const visibleTasks=tasks.filter(t=>expandedCategoryId?t.categoryId===expandedCategoryId:!t.categoryId);
- visibleTasks.forEach((t,i)=>{const cat=categories.find(c=>c.id===t.categoryId),id='task:'+t.id,prev=old.get(id),w: 180,h:64;let x=prev?.x,y=prev?.y,vx=prev?.vx??0,vy=prev?.vy??0;
+ visibleTasks.forEach((t,i)=>{const cat=categories.find(c=>c.id===t.categoryId),id='task:'+t.id,prev=old.get(id),w=180,h=64;let x=prev?.x,y=prev?.y,vx=prev?.vx??0,vy=prev?.vy??0;
  if(!prev){if(expandedCategoryId){const cols=Math.max(1,Math.floor((physicsW-20)/84)),col=i%cols,row=Math.floor(i/cols);x=10+col*84;y=24+row*88;const cx=physicsW/2,cy=physicsH*.48,dx=x-cx,dy=y-cy,len=Math.hypot(dx,dy)||1;vx=dx/len*190;vy=dy/len*150-70;}else{x=12+(i%2)*(physicsW*.48);y=145+Math.floor(i/2)*72;}}
  next.push({...prev,id,type:'task',label:t.title,color:cat?.color||(t.done?'#35a879':'#e83b53'),categoryId:t.categoryId||null,taskId:t.id,w,h,x,y,vx,vy,static:false});});
  bodies=next;$('worldCounts').textContent=categories.length+' '+tr('groups')+' · '+tasks.length+' '+tr('tasks');

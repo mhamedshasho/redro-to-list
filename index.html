@@ -121,7 +121,7 @@ async function start3DWorld(){
   }
   function removeAll(){for(const o of objects.values()){scene.remove(o.mesh);world.removeBody(o.body);o.geo.dispose();o.mesh.material.forEach(m=>{if(m.map)m.map.dispose();m.dispose()})}objects.clear()}
   function buildWorld(){
-   const old=selectedMesh?.userData?.id;removeAll();
+   const old=selectedMesh?.userData?.id;selectedMesh=null;removeAll();
    let z=-Math.max(0,categories.length-1)*1.15;
    categories.forEach((cat,i)=>{
     const ct=tasks.filter(t=>t.categoryId===cat.id),x=(i-(categories.length-1)/2)*3.5;
@@ -163,6 +163,7 @@ async function start3DWorld(){
    if(!dragging)return;const item=dragging;dragging=null;controls.enabled=true;
    if(didMove){item.body.type=CANNON.Body.DYNAMIC;item.body.mass=item.mesh.userData.type==='group'?4:1;item.body.updateMassProperties();item.body.velocity.set(0,-.8,0);item.body.angularVelocity.set(0,0,0);item.body.wakeUp();item.body.aabbNeedsUpdate=true}
    else{
+    item.body.type=CANNON.Body.DYNAMIC;item.body.mass=item.mesh.userData.type==='group'?4:1;item.body.updateMassProperties();item.body.wakeUp();
     const d=item.mesh.userData;
     if(d.type==='task'){const t=tasks.find(x=>x.id===d.id.slice(5));if(t)openModal(t)}
     else if(d.type==='group'){const id=d.id.slice(6);activeCategory=id;renderBlocks();$('worldTitle').textContent=tr('Selected group')+': '+(categories.find(c=>c.id===id)?.name||'');}

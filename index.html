@@ -77,9 +77,13 @@ async function start3DWorld(){
  if(world3dStarted||world3dBusy)return;world3dBusy=true;
  const host=$('worldCanvas'),loading=$('worldLoading');
  try{
-  const THREE=await import('https://esm.sh/three@0.170.0');
-  const CANNON=await import('https://esm.sh/cannon-es@0.20.0');
-  const {OrbitControls}=await import('https://esm.sh/three@0.170.0/examples/jsm/controls/OrbitControls.js');
+  // Load independent 3D modules concurrently so a slow connection costs less waiting time.
+  const [THREE,CANNON,controlsModule]=await Promise.all([
+   import('https://esm.sh/three@0.170.0?bundle'),
+   import('https://esm.sh/cannon-es@0.20.0?bundle'),
+   import('https://esm.sh/three@0.170.0/examples/jsm/controls/OrbitControls.js?bundle')
+  ]);
+  const {OrbitControls}=controlsModule;
   const scene=new THREE.Scene();scene.background=new THREE.Color('#11111a');scene.fog=new THREE.Fog('#11111a',16,42);
   const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(9,10,13);
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;host.appendChild(renderer.domElement);

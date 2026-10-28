@@ -1,5 +1,9 @@
 # Redro To-Do
 
+<p align="center">
+  <a href="https://github.com/mhamedshasho/aleppo-center-cash"><strong>Aleppo Center Cash</strong></a> · Cloud accounting for accounts, payments, and workspaces
+</p>
+
 A responsive, red-themed task manager designed for phones and desktop.
 
 ## Features
@@ -11,6 +15,9 @@ A responsive, red-themed task manager designed for phones and desktop.
 - Light and dark themes
 - Installable PWA shell with offline caching
 - No account, backend, or external database
+
+## Related project
+For shop accounting, customer balances, payments, and shared workspaces, visit [Aleppo Center Cash](https://github.com/mhamedshasho/aleppo-center-cash) or open the [web app](https://aleppo-center-cash.vercel.app/).
 
 ## Deploy
 This repository deploys automatically to GitHub Pages through `.github/workflows/pages.yml` whenever changes are pushed to `main`. In GitHub, open **Settings → Pages** and ensure **Build and deployment → Source** is set to **GitHub Actions** if it is not already configured.

@@ -37,7 +37,7 @@ input,textarea,select{box-shadow:inset 0 3px 8px #0003,0 3px 0 #09090d}
 @media(prefers-reduced-motion:reduce){.bigblock,.smallblock,.mark,.modal{transform:none!important}}
 
 /* Actual WebGL 3D workspace */
-#blockboard{display:none!important}
+body.world3d-ready #blockboard{display:none!important}
 .world3d{position:relative;margin:8px 0 30px;min-width:0;perspective:1200px;border:1px solid #41404e;border-radius:26px;overflow:hidden;background:linear-gradient(160deg,#22212d 0%,#121219 52%,#0a0a10 100%);box-shadow:0 12px 0 #08080c,0 28px 55px #0008,inset 0 1px #ffffff18}
 .world3d:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,#50324c55,transparent 58%),linear-gradient(125deg,#ffffff07,transparent 40%);z-index:0}
 .worldhud{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:14px;padding:20px 22px 12px}
@@ -77,9 +77,9 @@ async function start3DWorld(){
  if(world3dStarted||world3dBusy)return;world3dBusy=true;
  const host=$('worldCanvas'),loading=$('worldLoading');
  try{
-  const THREE=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js');
-  const CANNON=await import('https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js');
-  const {OrbitControls}=await import('https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js');
+  const THREE=await import('https://esm.sh/three@0.170.0');
+  const CANNON=await import('https://esm.sh/cannon-es@0.20.0');
+  const {OrbitControls}=await import('https://esm.sh/three@0.170.0/examples/jsm/controls/OrbitControls.js');
   const scene=new THREE.Scene();scene.background=new THREE.Color('#11111a');scene.fog=new THREE.Fog('#11111a',16,42);
   const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(9,10,13);
   const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;host.appendChild(renderer.domElement);
@@ -180,11 +180,14 @@ async function start3DWorld(){
    renderer.render(scene,camera);
   }
   world3dApi={THREE,CANNON,scene,camera,renderer,controls,world,objects,buildWorld,resizeObserver,dispose(){disposed=true;cancelAnimationFrame(raf);resizeObserver.disconnect();controls.dispose();renderer.dispose();removeAll()}};
-  world3dStarted=true;loading?.remove();buildWorld();animate(performance.now());
+  world3dStarted=true;document.body.classList.add('world3d-ready');loading?.remove();buildWorld();animate(performance.now());
  }catch(err){
   console.error('Redro 3D initialization failed:',err);
-  if(loading)loading.textContent=tr('3D engine could not load. Check your internet connection and refresh.');
+  if(loading)loading.textContent=tr('3D engine could not load. Check your internet connection and refresh.')+' ('+(err?.message||'load error')+')';
   $('worldPhysics').textContent=tr('3D engine unavailable');
+  document.body.classList.remove('world3d-ready');
+  const board=$('blockboard');if(board)board.style.display='block';
+  ['worldAddGroup','worldAddTask'].forEach(id=>{const b=$(id);if(b)b.disabled=true;});
  }finally{world3dBusy=false}
 }
 function refresh3DWorld(){if(world3dApi)world3dApi.buildWorld();else start3DWorld()}

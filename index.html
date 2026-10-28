@@ -86,11 +86,13 @@ async function start3DWorld(){
  const host=$('worldCanvas'),loading=$('worldLoading');
  try{
   // Load independent 3D modules concurrently so a slow connection costs less waiting time.
-  const [THREE,CANNON,controlsModule]=await Promise.all([
+  const modulesPromise=Promise.all([
    import('https://esm.sh/three@0.170.0?bundle'),
    import('https://esm.sh/cannon-es@0.20.0?bundle'),
    import('https://esm.sh/three@0.170.0/examples/jsm/controls/OrbitControls.js?bundle')
   ]);
+  const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('3D engine load timed out')),12000));
+  const [THREE,CANNON,controlsModule]=await Promise.race([modulesPromise,timeoutPromise]);
   const {OrbitControls}=controlsModule;
   const scene=new THREE.Scene();scene.background=new THREE.Color('#11111a');scene.fog=new THREE.Fog('#11111a',16,42);
   const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(9,10,13);
@@ -196,9 +198,11 @@ async function start3DWorld(){
  }catch(err){
   console.error('Redro 3D initialization failed:',err);
   if(loading)loading.textContent=tr('3D engine could not load. Check your internet connection and refresh.')+' ('+(err?.message||'load error')+')';
-  $('worldPhysics').textContent=tr('3D engine unavailable');
+  $('worldPhysics').textContent=tr('3D engine unavailable — using task blocks');
   document.body.classList.remove('world3d-ready');
-  const board=$('blockboard');if(board)board.style.display='block';
+  const board=$('blockboard');if(board){board.style.display='block';board.scrollIntoView({behavior:'smooth',block:'start'})}
+  const world=$('world3d');if(world)world.style.display='none';
+  notify(tr('3D could not load. Task blocks are ready below.'));
 
  }finally{world3dBusy=false}
 }

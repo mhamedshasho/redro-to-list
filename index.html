@@ -74,6 +74,13 @@ let categories=(()=>{try{return JSON.parse(localStorage.getItem('redro-categorie
 /* Three.js + cannon-es: real 3D meshes, perspective camera, gravity and collision stacking. */
 let world3dApi=null,world3dStarted=false,world3dBusy=false,world3dStartScheduled=false;
 function schedule3DWorld(){if(world3dStarted||world3dBusy||world3dStartScheduled)return;world3dStartScheduled=true;setTimeout(()=>{world3dStartScheduled=false;start3DWorld()},900)}
+/* Keep the 3D toolbar functional even if the external physics libraries fail to load. */
+$('worldAddGroup').onclick=()=>$('addCategory').click();
+$('worldAddTask').onclick=()=>openModal(null,activeCategory);
+$('worldReset').onclick=()=>{
+ if(world3dApi){world3dApi.camera.position.set(9,10,13);world3dApi.controls.target.set(0,1,0);world3dApi.controls.update()}
+ else {const loading=$('worldLoading');if(loading)loading.textContent=tr('Loading 3D engine…');start3DWorld()}
+};
 async function start3DWorld(){
  if(world3dStarted||world3dBusy)return;world3dBusy=true;
  const host=$('worldCanvas'),loading=$('worldLoading');
@@ -192,7 +199,7 @@ async function start3DWorld(){
   $('worldPhysics').textContent=tr('3D engine unavailable');
   document.body.classList.remove('world3d-ready');
   const board=$('blockboard');if(board)board.style.display='block';
-  ['worldAddGroup','worldAddTask'].forEach(id=>{const b=$(id);if(b)b.disabled=true;});
+
  }finally{world3dBusy=false}
 }
 function refresh3DWorld(){if(world3dApi)world3dApi.buildWorld();else start3DWorld()}

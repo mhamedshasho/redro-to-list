@@ -152,7 +152,7 @@ function renderWorkspace(){
  path.textContent=currentMedium?((currentCat?.name?currentCat.name+' / ':'')+currentMedium.name):currentCat?currentCat.name:tr('All blocks and tasks');
  head.append(path);view.append(head);
  const section=(label)=>{const h=document.createElement('h3');h.className='workspace-section-title';h.textContent=label;view.append(h)};
- const cards=document.createElement('div');cards.className='workspace-cards';
+ let cards=document.createElement('div');cards.className='workspace-cards';
  const folder=(name,meta,icon,color,open,edit,remove)=>{
   const card=document.createElement('div');card.className='workspace-folder';card.style.setProperty('--folder-color',color||'#d92342');
   const main=document.createElement('button');main.type='button';main.style.cssText='display:flex;gap:11px;align-items:center;min-width:0;flex:1;text-align:left;background:none;border:0;padding:0;color:inherit';
@@ -183,9 +183,11 @@ function renderWorkspace(){
  if(!expandedCategoryId&&!expandedMediumId){
   section(tr('Big blocks'));
   categories.forEach(cat=>folder(cat.name,tasks.filter(t=>t.categoryId===cat.id).length+' '+tr('tasks'),'▦',cat.color,()=>{expandedCategoryId=cat.id;renderWorkspace()},()=>{const n=prompt(tr('Category name'),cat.name);if(n&&n.trim()){cat.name=n.trim();saveCategories();renderWorkspace()}},async()=>{if(!confirm(tr('Delete this category? Tasks will become loose blocks.')))return;tasks.forEach(t=>{if(t.categoryId===cat.id){delete t.categoryId;delete t.mediumId}});mediumBlocks.forEach(m=>{if(m.categoryId===cat.id)m.categoryId=null});saveMediumBlocks();categories=categories.filter(c=>c.id!==cat.id);saveCategories();await persist();renderWorkspace()}));
+  view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
   if(!categories.length)empty(tr('No big blocks yet. Create one to organize your tasks.'));
   const rootMedium=mediumBlocks.filter(m=>!m.categoryId);
   if(rootMedium.length){section(tr('Medium blocks'));rootMedium.forEach(m=>folder(m.name,tasks.filter(t=>t.mediumId===m.id).length+' '+tr('tasks'),'▰',m.color,()=>{expandedMediumId=m.id;renderWorkspace()},()=>{const n=prompt(tr('Category name'),m.name);if(n&&n.trim()){m.name=n.trim();saveMediumBlocks();renderWorkspace()}},async()=>{if(!confirm('Delete this medium block? Its tasks will become loose tasks.'))return;tasks.forEach(t=>{if(t.mediumId===m.id){delete t.mediumId;delete t.categoryId}});mediumBlocks=mediumBlocks.filter(x=>x.id!==m.id);saveMediumBlocks();await persist();renderWorkspace()}))}
+  if(rootMedium.length)view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
   const loose=tasks.filter(t=>!t.categoryId&&!t.mediumId);
   section(tr('Loose tasks')+' · '+loose.length);
   if(loose.length){loose.forEach(t=>view.append(taskCard(t)))}else empty(tr('No loose tasks.'));
@@ -193,6 +195,7 @@ function renderWorkspace(){
   section(tr('Medium blocks'));
   const mediums=mediumBlocks.filter(m=>m.categoryId===currentCat.id);
   mediums.forEach(m=>folder(m.name,tasks.filter(t=>t.mediumId===m.id).length+' '+tr('tasks'),'▰',m.color,()=>{expandedMediumId=m.id;renderWorkspace()},()=>{const n=prompt(tr('Category name'),m.name);if(n&&n.trim()){m.name=n.trim();saveMediumBlocks();renderWorkspace()}},async()=>{if(!confirm('Delete this medium block? Its tasks will return to the big block.'))return;tasks.forEach(t=>{if(t.mediumId===m.id){delete t.mediumId;t.categoryId=currentCat.id}});mediumBlocks=mediumBlocks.filter(x=>x.id!==m.id);saveMediumBlocks();await persist();renderWorkspace()}));
+  view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
   if(!mediums.length)empty(tr('No medium blocks inside this big block yet.'));
   const direct=tasks.filter(t=>t.categoryId===currentCat.id&&!t.mediumId);
   section(tr('Tasks in this big block')+' · '+direct.length);

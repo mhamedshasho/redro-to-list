@@ -1,4 +1,4 @@
-const CACHE='redro-todo-v14';
+const CACHE='redro-todo-v15';
 const CORE=['./','./index.html','./manifest.webmanifest','./assets/icon.svg'];
 
 self.addEventListener('install',event=>{

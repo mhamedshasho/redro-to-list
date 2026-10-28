@@ -139,16 +139,96 @@ Object.assign(translations,{
   "Search tasks, groups, and subgroups":"ابحث عن المهام والمجموعات والمجموعات الفرعية",
   "Clear search":"مسح البحث","Search results":"نتائج البحث","Tasks":"المهام","results":"نتائج",
   "No matching tasks or groups found.":"لم يتم العثور على مهام أو مجموعات مطابقة.",
-  "Search by task, group, or subgroup name. Task details are included.":"ابحث باسم المهمة أو المجموعة أو المجموعة الفرعية، ويشمل البحث تفاصيل المهام."
+  "Search by task, group, or subgroup name. Task details are included.":"ابحث باسم المهمة أو المجموعة أو المجموعة الفرعية، ويشمل البحث تفاصيل المهام.",
+  "Drag to move or reorder":"اسحب لنقل العنصر أو إعادة ترتيبه","Drop here to move to this level":"أفلت هنا لنقل العنصر إلى هذا المستوى",
+  "Task reordered":"تمت إعادة ترتيب المهمة","Task moved and reordered":"تم نقل المهمة وإعادة ترتيبها",
+  "Task moved to group":"نُقلت المهمة إلى المجموعة","Task moved to subgroup":"نُقلت المهمة إلى المجموعة الفرعية",
+  "Task moved to unsorted tasks":"نُقلت المهمة إلى المهام غير المصنفة","Subgroup moved":"نُقلت المجموعة الفرعية",
+  "Subgroup moved or reordered":"تم نقل المجموعة الفرعية أو إعادة ترتيبها","Group order updated":"تم تحديث ترتيب المجموعات",
+  "Organize tasks into groups and subgroups. Drag the grip to reorder items or move tasks.":"نظّم مهامك في مجموعات ومجموعات فرعية. اسحب المقبض لإعادة الترتيب أو لنقل المهام.",
+  "Could not move item":"تعذر نقل العنصر"
 });
 const reverseTranslations=Object.fromEntries(Object.entries(translations).map(([en,ar])=>[ar,en]));
 const tr=s=>{const en=reverseTranslations[s]||s;return localStorage.getItem('redro-language')==='ar'?(translations[en]??s):en};
 function applyLanguage(){const lang=localStorage.getItem('redro-language')||'en';document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';document.body.dir=lang==='ar'?'rtl':'ltr';document.querySelectorAll('body *:not(script):not(style)').forEach(el=>{if(el.closest('#list'))return;for(const node of el.childNodes){if(node.nodeType===Node.TEXT_NODE&&node.nodeValue.trim()){const lead=node.nodeValue.match(/^\s*/)?.[0]||'',trail=node.nodeValue.match(/\s*$/)?.[0]||'',raw=node.nodeValue.trim(),en=reverseTranslations[raw]||raw;node.nodeValue=lead+(lang==='ar'?(translations[en]??raw):en)+trail}}});document.querySelectorAll('input[placeholder],textarea[placeholder]').forEach(el=>{const en=reverseTranslations[el.placeholder]||el.placeholder;el.placeholder=lang==='ar'?(translations[en]??el.placeholder):en});document.querySelectorAll('option').forEach(el=>{const en=reverseTranslations[el.textContent]||el.textContent;el.textContent=lang==='ar'?(translations[en]??en):en});document.querySelectorAll('[title],[aria-label]').forEach(el=>{for(const attr of ['title','aria-label']){if(!el.hasAttribute(attr))continue;const raw=el.getAttribute(attr),en=reverseTranslations[raw]||raw;el.setAttribute(attr,lang==='ar'?(translations[en]??raw):en)}});$('language').value=lang;}
-let categories=(()=>{try{return JSON.parse(localStorage.getItem('redro-categories')||'null')||[{id:'school',name:'School',emoji:'📚',color:'#5b8def'},{id:'housework',name:'Housework',emoji:'🏠',color:'#45c98a'},{id:'personal',name:'Personal',emoji:'⭐',color:'#e12b3a'}]}catch{return []}})(),activeCategory=null,draggedTaskId=null,draggedCategoryId=null;const saveCategories=()=>localStorage.setItem('redro-categories',JSON.stringify(categories));const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},fmt=s=>new Date(s+'T12:00:00').toLocaleDateString(localStorage.getItem('redro-language')==='ar'?'ar':'en',{month:'short',day:'numeric'}),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);let tasks=[],selected=today(),filter='all',view='all',editing=null,newTaskCategoryId=null,newTaskMediumId=null,db=null;const dbReady=new Promise((resolve,reject)=>{if(!('indexedDB'in window)){resolve(null);return}const req=indexedDB.open('RedroTodoDB',1);req.onupgradeneeded=()=>req.result.createObjectStore('tasks',{keyPath:'id'});req.onsuccess=()=>{db=req.result;resolve(db)};req.onerror=()=>resolve(null)});async function load(){await dbReady;if(db){tasks=await new Promise(resolve=>{const r=db.transaction('tasks').objectStore('tasks').getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>resolve([])})}else{try{tasks=JSON.parse(localStorage.getItem('redro-tasks')||'[]')}catch{tasks=[]}}render()}async function persist(){await dbReady;if(db){const tx=db.transaction('tasks','readwrite'),store=tx.objectStore('tasks');store.clear();tasks.forEach(t=>store.put(t));await new Promise(r=>tx.oncomplete=r)}else localStorage.setItem('redro-tasks',JSON.stringify(tasks));$('saved').textContent='Saved';render()}function notify(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=> $('toast').classList.add('hidden'),2200)}
+let categories=(()=>{try{return JSON.parse(localStorage.getItem('redro-categories')||'null')||[{id:'school',name:'School',emoji:'📚',color:'#5b8def'},{id:'housework',name:'Housework',emoji:'🏠',color:'#45c98a'},{id:'personal',name:'Personal',emoji:'⭐',color:'#e12b3a'}]}catch{return []}})(),activeCategory=null,draggedTaskId=null,draggedCategoryId=null;const saveCategories=()=>localStorage.setItem('redro-categories',JSON.stringify(categories));const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')},fmt=s=>new Date(s+'T12:00:00').toLocaleDateString(localStorage.getItem('redro-language')==='ar'?'ar':'en',{month:'short',day:'numeric'}),uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);let tasks=[],selected=today(),filter='all',view='all',editing=null,newTaskCategoryId=null,newTaskMediumId=null,db=null;const dbReady=new Promise((resolve,reject)=>{if(!('indexedDB'in window)){resolve(null);return}const req=indexedDB.open('RedroTodoDB',1);req.onupgradeneeded=()=>req.result.createObjectStore('tasks',{keyPath:'id'});req.onsuccess=()=>{db=req.result;resolve(db)};req.onerror=()=>resolve(null)});async function load(){await dbReady;if(db){tasks=await new Promise(resolve=>{const r=db.transaction('tasks').objectStore('tasks').getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>resolve([])})}else{try{tasks=JSON.parse(localStorage.getItem('redro-tasks')||'[]')}catch{tasks=[]}}tasks.sort((a,b)=>(a.order??Number.MAX_SAFE_INTEGER)-(b.order??Number.MAX_SAFE_INTEGER));render()}async function persist(){tasks.forEach((task,index)=>{task.order=index});await dbReady;if(db){const tx=db.transaction('tasks','readwrite'),store=tx.objectStore('tasks');store.clear();tasks.forEach(t=>store.put(t));await new Promise(r=>tx.oncomplete=r)}else localStorage.setItem('redro-tasks',JSON.stringify(tasks));$('saved').textContent='Saved';render()}function notify(s){$('toast').textContent=s;$('toast').classList.remove('hidden');setTimeout(()=> $('toast').classList.add('hidden'),2200)}
 /* Redro To-Do organized workspace: no physics, canvas, or drag simulation. */
 let expandedCategoryId=null,expandedMediumId=null,workspaceQuery='';
 let mediumBlocks=(()=>{try{return JSON.parse(localStorage.getItem('redro-medium-blocks')||'[]')}catch{return []}})();
 const saveMediumBlocks=()=>localStorage.setItem('redro-medium-blocks',JSON.stringify(mediumBlocks));
+let workspaceDragPayload=null;
+function readWorkspaceDragPayload(event){
+ if(workspaceDragPayload)return workspaceDragPayload;
+ try{const payload=JSON.parse(event.dataTransfer?.getData('text/plain')||'null');return payload&&payload.kind&&payload.id?payload:null}catch{return null}
+}
+function createWorkspaceDragHandle(kind,id,owner){
+ const handle=document.createElement('button');handle.type='button';handle.className='workspace-drag-handle';handle.textContent='⠿';handle.draggable=true;
+ handle.dataset.dragKind=kind;handle.dataset.dragId=id;
+ handle.title=tr('Drag to move or reorder');handle.setAttribute('aria-label',handle.title);
+ handle.addEventListener('dragstart',event=>{
+  workspaceDragPayload={kind,id};
+  if(event.dataTransfer){event.dataTransfer.setData('text/plain',JSON.stringify(workspaceDragPayload));event.dataTransfer.effectAllowed='move'}
+  owner.classList.add('dragging');
+ });
+ handle.addEventListener('dragend',()=>{workspaceDragPayload=null;document.querySelectorAll('.dragging,.dragover').forEach(element=>element.classList.remove('dragging','dragover'))});
+ return handle;
+}
+function attachWorkspaceDropTarget(target,acceptedKinds,handler){
+ target.addEventListener('dragover',event=>{const payload=readWorkspaceDragPayload(event);if(!payload||!acceptedKinds.includes(payload.kind))return;event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='move';target.classList.add('dragover')});
+ target.addEventListener('dragleave',event=>{if(!target.contains(event.relatedTarget))target.classList.remove('dragover')});
+ target.addEventListener('drop',event=>{const payload=readWorkspaceDragPayload(event);if(!payload||!acceptedKinds.includes(payload.kind))return;event.preventDefault();target.classList.remove('dragover');Promise.resolve(handler(payload)).catch(error=>{console.error('Redro drag action failed',error);notify(tr('Could not move item'))})});
+}
+function reorderWorkspaceItems(items,sourceId,targetId){
+ const sourceIndex=items.findIndex(item=>item.id===sourceId),targetIndex=items.findIndex(item=>item.id===targetId);
+ if(sourceIndex<0||targetIndex<0||sourceIndex===targetIndex)return false;
+ const [source]=items.splice(sourceIndex,1);const insertAt=items.findIndex(item=>item.id===targetId);items.splice(insertAt,0,source);return true;
+}
+async function moveTaskToContainer(task,destination){
+ if(destination.kind==='category'){task.categoryId=destination.id;delete task.mediumId}
+ else if(destination.kind==='medium'){const medium=mediumBlocks.find(item=>item.id===destination.id);task.categoryId=medium?.categoryId||null;task.mediumId=destination.id}
+ else{delete task.categoryId;delete task.mediumId}
+ await persist();notify(tr(destination.kind==='category'?'Task moved to group':destination.kind==='medium'?'Task moved to subgroup':'Task moved to unsorted tasks'));
+}
+async function handleWorkspaceTaskDrop(targetTaskId,payload){
+ if(payload.kind!=='task'||payload.id===targetTaskId)return;
+ const source=tasks.find(task=>task.id===payload.id),target=tasks.find(task=>task.id===targetTaskId);if(!source||!target)return;
+ const sameContainer=(source.categoryId||null)===(target.categoryId||null)&&(source.mediumId||null)===(target.mediumId||null);
+ source.categoryId=target.categoryId||null;source.mediumId=target.mediumId||null;
+ reorderWorkspaceItems(tasks,source.id,target.id);await persist();notify(tr(sameContainer?'Task reordered':'Task moved and reordered'));
+}
+async function handleWorkspaceFolderDrop(targetKind,targetId,payload){
+ const target=targetKind==='category'?categories.find(item=>item.id===targetId):mediumBlocks.find(item=>item.id===targetId);if(!target)return;
+ if(payload.kind==='task'){
+  const task=tasks.find(item=>item.id===payload.id);if(!task)return;
+  await moveTaskToContainer(task,{kind:targetKind,id:target.id});return;
+ }
+ if(payload.kind==='category'&&targetKind==='category'){
+  if(reorderWorkspaceItems(categories,payload.id,target.id)){saveCategories();renderWorkspace();notify(tr('Group order updated'))}return;
+ }
+ if(payload.kind==='medium'){
+  const source=mediumBlocks.find(item=>item.id===payload.id);if(!source||source.id===target.id)return;
+  source.categoryId=targetKind==='category'?target.id:(target.categoryId||null);
+  tasks.filter(task=>task.mediumId===source.id).forEach(task=>{if(source.categoryId)task.categoryId=source.categoryId;else delete task.categoryId});
+  if(targetKind==='medium')reorderWorkspaceItems(mediumBlocks,source.id,target.id);
+  saveMediumBlocks();await persist();notify(tr('Subgroup moved or reordered'));
+ }
+}
+async function handleWorkspacePathDrop(payload,currentCategory,currentMedium){
+ if(payload.kind==='task'){
+  const task=tasks.find(item=>item.id===payload.id);if(!task)return;
+  if(currentMedium)await moveTaskToContainer(task,{kind:'medium',id:currentMedium.id});
+  else if(currentCategory)await moveTaskToContainer(task,{kind:'category',id:currentCategory.id});
+  else await moveTaskToContainer(task,{kind:'loose'});
+  return;
+ }
+ if(payload.kind==='medium'&&!currentMedium){
+  const medium=mediumBlocks.find(item=>item.id===payload.id);if(!medium)return;
+  medium.categoryId=currentCategory?.id||null;
+  tasks.filter(task=>task.mediumId===medium.id).forEach(task=>{if(medium.categoryId)task.categoryId=medium.categoryId;else delete task.categoryId});
+  saveMediumBlocks();await persist();notify(tr('Subgroup moved'));
+ }
+}
+
 const workspace=$('worldCanvas');
 const workspaceSearchInput=$('workspaceSearch');
 const clearWorkspaceSearchButton=$('clearWorkspaceSearch');
@@ -305,6 +385,23 @@ body[dir=rtl] .workspace-search input{text-align:right}
 `;
 document.head.append(comfortStyle);
 
+const dragStyle=document.createElement('style');
+dragStyle.textContent=`
+.workspace-drag-handle{width:36px;height:38px;min-width:36px;min-height:38px;padding:0!important;border:1px solid var(--line)!important;border-radius:10px;background:var(--panel2)!important;color:var(--muted)!important;display:grid;place-items:center;font-size:17px;line-height:1;cursor:grab!important;touch-action:none;-webkit-user-drag:element;user-select:none}
+.workspace-drag-handle:active{cursor:grabbing!important}
+.workspace-folder.has-drag-handle{padding-inline-end:56px!important}
+.workspace-folder.has-drag-handle.has-folder-actions{padding-inline-end:150px!important}
+.workspace-folder.dragover,.workspace-task.dragover,.workspace-path.dragover{border-color:var(--red)!important;background:color-mix(in srgb,var(--red),var(--panel) 92%);box-shadow:0 0 0 3px color-mix(in srgb,var(--red),transparent 82%)}
+.workspace-folder.dragging,.workspace-task.dragging{opacity:.48;transform:scale(.985)}
+.workspace-path{border-radius:9px;padding:6px 8px;transition:background .18s,border-color .18s}
+.workspace-path.dragover{border:1px dashed var(--red);color:var(--text)}
+@media(max-width:600px){.workspace-folder.has-drag-handle.has-folder-actions{padding-inline-end:150px!important}.workspace-drag-handle{width:36px;height:38px;min-width:36px}}
+@media(max-width:360px){.workspace-folder.has-drag-handle,.workspace-folder.has-drag-handle.has-folder-actions{padding-inline:10px!important}}
+@media(prefers-reduced-motion:reduce){.workspace-drag-handle,.workspace-path{transition:none!important}}
+`;
+document.head.append(dragStyle);
+
+
 
 function renderWorkspace(){
  const view=document.createElement('div');view.className='workspace-view';
@@ -318,10 +415,11 @@ function renderWorkspace(){
  }
  const path=document.createElement('div');path.className='workspace-path';
  path.textContent=currentMedium?((currentCat?.name?currentCat.name+' / ':'')+currentMedium.name):currentCat?currentCat.name:tr('All groups and tasks');
+ if(!workspaceQuery){path.title=tr('Drop here to move to this level');attachWorkspaceDropTarget(path,currentMedium?['task']:['task','medium'],payload=>handleWorkspacePathDrop(payload,currentCat,currentMedium))}
  head.append(path);view.append(head);
  const section=(label)=>{const h=document.createElement('h3');h.className='workspace-section-title';h.textContent=label;view.append(h)};
  let cards=document.createElement('div');cards.className='workspace-cards';
- const folder=(name,meta,icon,color,open,edit,remove)=>{
+ const folder=(name,meta,icon,color,open,edit,remove,dragKind=null,dragId=null)=>{
   const card=document.createElement('div');card.className='workspace-folder';card.style.setProperty('--folder-color',color||'#d92342');
   const main=document.createElement('button');main.type='button';main.style.cssText='display:flex;gap:11px;align-items:center;min-width:0;flex:1;text-align:left;background:none;border:0;padding:0;color:inherit';
   const badge=document.createElement('span');badge.className='workspace-folder-icon';badge.textContent=icon;
@@ -330,12 +428,13 @@ function renderWorkspace(){
   const sub=document.createElement('span');sub.className='workspace-folder-meta';sub.textContent=meta;
   textBox.append(title,sub);main.append(badge,textBox);main.onclick=open;card.append(main);
   const tools=document.createElement('div');tools.className='workspace-card-tools';
+  if(dragKind){card.dataset.folderKind=dragKind;card.dataset.folderId=dragId;card.classList.add('has-drag-handle');if(edit||remove)card.classList.add('has-folder-actions');tools.append(createWorkspaceDragHandle(dragKind,dragId,card));attachWorkspaceDropTarget(card,dragKind==='category'?['task','category','medium']:['task','medium'],payload=>handleWorkspaceFolderDrop(dragKind,dragId,payload))}
   if(edit){const rename=document.createElement('button');rename.type='button';rename.textContent='✎';rename.title=tr('Rename');rename.setAttribute('aria-label',tr('Rename'));rename.onclick=edit;tools.append(rename)}
   if(remove){const del=document.createElement('button');del.type='button';del.textContent='×';del.title=tr('Delete');del.setAttribute('aria-label',tr('Delete'));del.onclick=remove;tools.append(del)}
   if(tools.childElementCount)card.append(tools);cards.append(card);
  };
  const taskCard=(t)=>{
-  const card=document.createElement('article');card.className='workspace-task'+(t.done?' done':'');
+  const card=document.createElement('article');card.className='workspace-task'+(t.done?' done':'');card.dataset.taskId=t.id;attachWorkspaceDropTarget(card,['task'],payload=>handleWorkspaceTaskDrop(t.id,payload));
   const check=document.createElement('input');check.type='checkbox';check.className='workspace-check';check.checked=!!t.done;check.setAttribute('aria-label',tr('Mark complete'));
   check.onchange=async()=>{t.done=check.checked;await persist();renderWorkspace()};
   const body=document.createElement('div');body.className='workspace-task-body';
@@ -344,6 +443,7 @@ function renderWorkspace(){
   if(t.notes){const notes=document.createElement('div');notes.className='workspace-task-meta';notes.textContent=t.notes;body.append(notes)}
   const meta=document.createElement('div');meta.className='workspace-task-meta';meta.textContent=(t.date?fmt(t.date)+' · ':'')+tr(({low:'Low',medium:'Medium',high:'High'})[t.priority]||'Medium')+' · '+tr(t.done?'Completed':'To do');body.append(meta);
   const tools=document.createElement('div');tools.className='workspace-task-tools';
+  tools.append(createWorkspaceDragHandle('task',t.id,card));
   const edit=document.createElement('button');edit.type='button';edit.textContent='✎';edit.title=tr('Edit task');edit.setAttribute('aria-label',tr('Edit task'));edit.onclick=()=>openModal(t);
   tools.append(edit);card.append(check,body,tools);return card;
  };
@@ -361,12 +461,12 @@ function renderWorkspace(){
   path.textContent=tr('Search results');
   if(foundCategories.length){
    section(tr('Groups')+' · '+foundCategories.length);
-   foundCategories.forEach(cat=>folder(cat.name,tasks.filter(t=>t.categoryId===cat.id).length+' '+tr('tasks'),'▦',cat.color,()=>openCategory(cat),null,null));
+   foundCategories.forEach(cat=>folder(cat.name,tasks.filter(t=>t.categoryId===cat.id).length+' '+tr('tasks'),'▦',cat.color,()=>openCategory(cat),null,null,'category',cat.id));
    view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
   }
   if(foundMediums.length){
    section(tr('Subgroups')+' · '+foundMediums.length);
-   foundMediums.forEach(medium=>folder(medium.name,tasks.filter(t=>t.mediumId===medium.id).length+' '+tr('tasks'),'▰',medium.color,()=>openMedium(medium),null,null));
+   foundMediums.forEach(medium=>folder(medium.name,tasks.filter(t=>t.mediumId===medium.id).length+' '+tr('tasks'),'▰',medium.color,()=>openMedium(medium),null,null,'medium',medium.id));
    view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
   }
   if(foundTasks.length){section(tr('Tasks')+' · '+foundTasks.length);foundTasks.forEach(task=>view.append(taskCard(task)))}
@@ -381,11 +481,11 @@ function renderWorkspace(){
  }
  if(!expandedCategoryId&&!expandedMediumId){
   section(tr('Groups'));
-  categories.forEach(cat=>folder(cat.name,tasks.filter(t=>t.categoryId===cat.id).length+' '+tr('tasks'),'▦',cat.color,()=>{expandedCategoryId=cat.id;renderWorkspace()},()=>{const n=prompt(tr('Group name'),cat.name);if(n&&n.trim()){cat.name=n.trim();saveCategories();renderWorkspace()}},async()=>{if(!confirm(tr('Delete this group? Its tasks will become unsorted.')))return;tasks.forEach(t=>{if(t.categoryId===cat.id){delete t.categoryId;delete t.mediumId}});mediumBlocks.forEach(m=>{if(m.categoryId===cat.id)m.categoryId=null});saveMediumBlocks();categories=categories.filter(c=>c.id!==cat.id);saveCategories();await persist();renderWorkspace()}));
+  categories.forEach(cat=>folder(cat.name,tasks.filter(t=>t.categoryId===cat.id).length+' '+tr('tasks'),'▦',cat.color,()=>{expandedCategoryId=cat.id;renderWorkspace()},()=>{const n=prompt(tr('Group name'),cat.name);if(n&&n.trim()){cat.name=n.trim();saveCategories();renderWorkspace()}},async()=>{if(!confirm(tr('Delete this group? Its tasks will become unsorted.')))return;tasks.forEach(t=>{if(t.categoryId===cat.id){delete t.categoryId;delete t.mediumId}});mediumBlocks.forEach(m=>{if(m.categoryId===cat.id)m.categoryId=null});saveMediumBlocks();categories=categories.filter(c=>c.id!==cat.id);saveCategories();await persist();renderWorkspace()},'category',cat.id));
   view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
   if(!categories.length)empty(tr('No groups yet. Create one to organize your tasks.'));
   const rootMedium=mediumBlocks.filter(m=>!m.categoryId);
-  if(rootMedium.length){section(tr('Subgroups'));rootMedium.forEach(m=>folder(m.name,tasks.filter(t=>t.mediumId===m.id).length+' '+tr('tasks'),'▰',m.color,()=>{expandedMediumId=m.id;renderWorkspace()},()=>{const n=prompt(tr('Group name'),m.name);if(n&&n.trim()){m.name=n.trim();saveMediumBlocks();renderWorkspace()}},async()=>{if(!confirm(tr('Delete this subgroup? Its tasks will become unsorted.')))return;tasks.forEach(t=>{if(t.mediumId===m.id){delete t.mediumId;delete t.categoryId}});mediumBlocks=mediumBlocks.filter(x=>x.id!==m.id);saveMediumBlocks();await persist();renderWorkspace()}))}
+  if(rootMedium.length){section(tr('Subgroups'));rootMedium.forEach(m=>folder(m.name,tasks.filter(t=>t.mediumId===m.id).length+' '+tr('tasks'),'▰',m.color,()=>{expandedMediumId=m.id;renderWorkspace()},()=>{const n=prompt(tr('Group name'),m.name);if(n&&n.trim()){m.name=n.trim();saveMediumBlocks();renderWorkspace()}},async()=>{if(!confirm(tr('Delete this subgroup? Its tasks will become unsorted.')))return;tasks.forEach(t=>{if(t.mediumId===m.id){delete t.mediumId;delete t.categoryId}});mediumBlocks=mediumBlocks.filter(x=>x.id!==m.id);saveMediumBlocks();await persist();renderWorkspace()},'medium',m.id))}
   if(rootMedium.length)view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
   const loose=tasks.filter(t=>!t.categoryId&&!t.mediumId);
   section(tr('Unsorted tasks')+' · '+loose.length);
@@ -393,7 +493,7 @@ function renderWorkspace(){
  }else if(currentCat&&!currentMedium){
   section(tr('Subgroups'));
   const mediums=mediumBlocks.filter(m=>m.categoryId===currentCat.id);
-  mediums.forEach(m=>folder(m.name,tasks.filter(t=>t.mediumId===m.id).length+' '+tr('tasks'),'▰',m.color,()=>{expandedMediumId=m.id;renderWorkspace()},()=>{const n=prompt(tr('Group name'),m.name);if(n&&n.trim()){m.name=n.trim();saveMediumBlocks();renderWorkspace()}},async()=>{if(!confirm('Delete this medium block? Its tasks will return to the big block.'))return;tasks.forEach(t=>{if(t.mediumId===m.id){delete t.mediumId;t.categoryId=currentCat.id}});mediumBlocks=mediumBlocks.filter(x=>x.id!==m.id);saveMediumBlocks();await persist();renderWorkspace()}));
+  mediums.forEach(m=>folder(m.name,tasks.filter(t=>t.mediumId===m.id).length+' '+tr('tasks'),'▰',m.color,()=>{expandedMediumId=m.id;renderWorkspace()},()=>{const n=prompt(tr('Group name'),m.name);if(n&&n.trim()){m.name=n.trim();saveMediumBlocks();renderWorkspace()}},async()=>{if(!confirm('Delete this medium block? Its tasks will return to the big block.'))return;tasks.forEach(t=>{if(t.mediumId===m.id){delete t.mediumId;t.categoryId=currentCat.id}});mediumBlocks=mediumBlocks.filter(x=>x.id!==m.id);saveMediumBlocks();await persist();renderWorkspace()},'medium',m.id));
   view.append(cards);cards=document.createElement('div');cards.className='workspace-cards';
   if(!mediums.length)empty(tr('No subgroups inside this group yet.'));
   const direct=tasks.filter(t=>t.categoryId===currentCat.id&&!t.mediumId);
@@ -419,7 +519,7 @@ function renderWorkspace(){
  if(actions.children.length)view.append(cards);if(actions.children.length)view.append(actions);
  workspace.replaceChildren(view);
  $('worldTitle').textContent=currentMedium?currentMedium.name:currentCat?currentCat.name:tr('Your tasks');
- $('worldHelp').textContent=currentMedium?tr('Only tasks in this subgroup are shown.'):currentCat?tr('Showing this group and its tasks.'):tr('Organize tasks into groups, subgroups, and simple task cards.');
+ $('worldHelp').textContent=currentMedium?tr('Only tasks in this subgroup are shown.'):currentCat?tr('Showing this group and its tasks.'):tr('Organize tasks into groups and subgroups. Drag the grip to reorder items or move tasks.');
  $('worldCounts').textContent=categories.length+' '+tr('groups')+' · '+mediumBlocks.length+' '+tr('subgroups')+' · '+tasks.length+' '+tr('tasks');
  $('worldPhysics').textContent=tr('Organized list view');
 }

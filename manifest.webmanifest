@@ -1,12 +1,12 @@
 {
-  "name": "Redro To-Do",
-  "short_name": "Redro To-Do",
+  "name": "Redro To Do List",
+  "short_name": "Redro To Do",
+  "description": "A fast, private task manager.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#111114",
   "theme_color": "#d92332",
-  "description": "A fast, private task manager.",
   "icons": [
     {
       "src": "assets/icon.svg",

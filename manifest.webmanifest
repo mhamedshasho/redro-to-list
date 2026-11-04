@@ -1,28 +1,32 @@
 {
-  "id": "/redro-to-list/",
+  "id": "https://mhamedshasho.github.io/redro-to-list/",
   "name": "Redro To Do List",
   "short_name": "Redro To Do",
   "description": "A fast, private task manager.",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "https://mhamedshasho.github.io/redro-to-list/",
+  "scope": "https://mhamedshasho.github.io/redro-to-list/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#111114",
   "theme_color": "#d92332",
   "icons": [
     {
-      "src": "./assets/app-icon-192.png",
+      "src": "https://mhamedshasho.github.io/redro-to-list/assets/app-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./assets/app-icon-512.png",
+      "src": "https://mhamedshasho.github.io/redro-to-list/assets/app-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./assets/app-icon-maskable-512.png",
+      "src": "https://mhamedshasho.github.io/redro-to-list/assets/app-icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

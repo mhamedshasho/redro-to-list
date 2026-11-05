@@ -79,7 +79,49 @@ body.light .world3d{background:linear-gradient(160deg,#e7e5f1,#d8d7e7 55%,#c9c9d
 .worldgroup-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}.worldgroup-edit,.worldgroup-delete{min-height:42px;border:1px solid #555261;border-radius:11px;padding:9px 10px;background:#292833;color:#fff;font-size:13px;font-weight:700}.worldgroup-delete{border-color:#8d3544;background:#48202a}.worldgroup-edit:active,.worldgroup-delete:active{transform:scale(.98)}@media(max-width:600px){.worldgroup-actions{gap:9px}.worldgroup-edit,.worldgroup-delete{min-height:46px;font-size:14px}}
 @media(max-width:600px){.worldactions{grid-template-columns:1fr 1fr 1fr}.worldbtn{font-size:12px;padding:9px 5px}}
 </style>
-<style>.mark{display:block;object-fit:contain;background:#fff;padding:1px;overflow:hidden}</style></head>
+<style>.mark{display:block;object-fit:contain;background:#fff;padding:1px;overflow:hidden}</style><style>
+
+/* REDRO MOTION SYSTEM — dynamic, balanced, low-cost */
+@keyframes redroEnter{from{opacity:0;transform:translate3d(0,12px,0) scale(.985)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+@keyframes redroPop{0%{opacity:0;transform:scale(.94)}70%{transform:scale(1.015)}100%{opacity:1;transform:scale(1)}}
+@keyframes redroFade{from{opacity:0}to{opacity:1}}
+@keyframes redroSlide{from{opacity:0;transform:translate3d(16px,0,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+:where(button,a,input,select,textarea,[role="button"]){-webkit-tap-highlight-color:transparent}
+:where(button,a,[role="button"]){transition:transform .18s ease,background-color .2s ease,border-color .2s ease,box-shadow .2s ease,opacity .18s ease}
+:where(button,a,[role="button"]):active{transform:scale(.975)}
+:where(input,select,textarea){transition:border-color .18s ease,box-shadow .18s ease}
+:where(input,select,textarea):focus-visible{outline:2px solid var(--red,var(--accent,#ef3548));outline-offset:2px}
+@media(hover:hover) and (pointer:fine){
+ :where(button,a,[role="button"]):hover{filter:brightness(1.045)}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+.top{animation:redroFade .3s ease both}
+.worldhud{animation:redroEnter .36s ease both}
+.worldfooter{animation:redroFade .32s ease .08s both}
+.worldbtn{transition:transform .18s ease,filter .18s ease,box-shadow .18s ease}
+.worldbtn:active{transform:translateY(2px) scale(.98)}
+.worldgroup-panel{animation:redroPop .22s cubic-bezier(.2,.8,.2,1) both}
+.worldgroup-task{transition:transform .18s ease,background-color .18s ease,border-color .18s ease}
+.worldgroup-task:active{transform:scale(.985)}
+.bigblock,.smallblock{animation:redroEnter .3s cubic-bezier(.2,.75,.25,1) both}
+.bigblock:nth-child(2),.smallblock:nth-child(2){animation-delay:35ms}
+.bigblock:nth-child(3),.smallblock:nth-child(3){animation-delay:70ms}
+.bigblock:nth-child(4),.smallblock:nth-child(4){animation-delay:105ms}
+.boardpanel{animation:redroEnter .26s ease both}
+.modal{animation:redroPop .22s cubic-bezier(.2,.8,.2,1) both}
+.toast{animation:redroPop .18s ease both}
+@media(hover:hover) and (pointer:fine){
+ .bigblock:hover,.smallblock:hover{filter:brightness(1.06)}
+}
+@media(prefers-reduced-motion:reduce){
+ .bigblock,.smallblock,.mark,.modal,.worldgroup-panel{transform:none!important}
+}
+
+</style>
+</head>
 <body><div class="shell">
 <header class="top"><div class="brand"><img class="mark" src="./assets/brand-icon.png" alt="" aria-hidden="true"><span>REDRO<small>TO-DO</small></span></div><div style="display:flex;gap:8px"><button class="icon" id="settings" aria-label="Settings" title="Settings">⚙</button><button class="icon" id="theme" aria-label="Toggle theme">☼</button></div></header>
 <section class="welcome"><div><p class="eyebrow">YOUR TASKS</p><h1>Get things <span>done.</span></h1><p class="muted">All your tasks in one simple list.</p></div><div class="ring" id="ring"><div><b id="percent">0%</b><small>DONE</small></div></div></section>

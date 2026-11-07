@@ -1,4 +1,4 @@
-const CACHE='redro-phone-numbers-v6';
+const CACHE='redro-phone-numbers-v7';
 const CORE=['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./icons/icon.svg'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting()));

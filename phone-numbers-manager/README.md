@@ -1,6 +1,6 @@
 # Redro Phone Numbers Manager
 
-A private, offline-first contacts PWA for saving phone numbers, organizing groups, calling directly, and creating follow-up tasks.
+A simple private, offline-first phone directory. Each entry contains a person's name, printing shop name, and phone number. Choose a saved contact using the supported phone contact picker or enter the details manually.
 
 ## Redro To-Do integration
 
@@ -11,7 +11,8 @@ Both apps must be opened under the same origin (the GitHub Pages address for thi
 ## Features
 
 - Arabic and English interface
-- Search and group filtering
+- Search by person name, printing shop, or phone number
+- Optional phone contact picker with manual entry fallback
 - Direct `tel:` calling
 - Create follow-up tasks for a contact
 - Shared tasks with Redro To-Do

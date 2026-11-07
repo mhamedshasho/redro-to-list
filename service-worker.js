@@ -1,4 +1,4 @@
-const CACHE='redro-todo-v25';
+const CACHE='redro-todo-v26';
 const CORE=['./','./index.html','./manifest.webmanifest','./assets/icon.svg',"./assets/brand-icon.png","./assets/app-icon-192.png","./assets/app-icon-512.png","./assets/app-icon-maskable-512.png","./assets/apple-touch-icon.png"];
 
 self.addEventListener('install',event=>{

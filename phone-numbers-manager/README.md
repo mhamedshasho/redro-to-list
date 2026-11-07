@@ -1,24 +1,20 @@
 # Redro Phone Numbers Manager
 
-A simple private, offline-first phone directory. Each entry contains a person's name, printing shop name, and phone number. Choose a saved contact using the supported phone contact picker or enter the details manually.
+A private, offline-first phone directory. Each contact has a person's name, printing shop name, phone number, and an optional group chosen from groups you create separately.
 
-## Redro To-Do integration
-
-This app shares the `RedroTodoDB` IndexedDB database with Redro To-Do. Contacts are stored in the `contacts` object store and follow-up tasks are written to the existing `tasks` store. Tasks include contact metadata and appear in Redro To-Do. Completion changes are reflected here when the To-Do app broadcasts task updates.
-
-Both apps must be opened under the same origin (the GitHub Pages address for this repository). Data remains on the current browser/device; it is not cloud-synced. Use the JSON contact backup when changing devices.
+## Groups
+- Create, rename, and delete groups independently from contacts.
+- Assign or change a group while adding or editing a phone number.
+- Contacts can remain unassigned and be grouped later.
+- Deleting a group does not delete its contacts; they become unassigned.
 
 ## Features
-
 - Arabic and English interface
-- Search by person name, printing shop, or phone number
+- Search by person, printing shop, phone number, or group
 - Optional phone contact picker with manual entry fallback
-- Direct `tel:` calling
-- Create follow-up tasks for a contact
-- Shared tasks with Redro To-Do
+- Direct phone calling
 - Local IndexedDB storage and offline PWA support
-- JSON export and import
+- JSON export and import including groups
 
-## Deployment
-
-The app is available in the `phone-numbers-manager/` folder of the Redro To-Do repository and uses the same GitHub Pages origin so IndexedDB can be shared.
+## Storage
+Contacts are stored locally in the browser. Groups are stored locally on the same device. Data is not cloud-synced; export a backup when changing devices.

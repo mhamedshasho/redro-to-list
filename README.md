@@ -24,3 +24,9 @@ This repository deploys automatically to GitHub Pages through `.github/workflows
 
 ## Data and privacy
 Tasks are stored locally in the browser on the device being used. They are not synced between devices. Export a JSON backup before clearing browser data or switching devices.
+
+## Redro Phone Numbers Manager
+
+Manage private contacts, search by groups, call numbers directly, and create follow-up tasks linked to contacts. The app is deployed from [`phone-numbers-manager/`](./phone-numbers-manager/) and shares the local IndexedDB task database with Redro To-Do.
+
+Open: https://mhamedshasho.github.io/redro-to-list/phone-numbers-manager/

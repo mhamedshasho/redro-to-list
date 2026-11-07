@@ -1,0 +1,12 @@
+{
+  "id":"./",
+  "name":"Redro Phone Numbers Manager",
+  "short_name":"Redro Numbers",
+  "description":"Private contacts connected to Redro To-Do.",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#101014",
+  "theme_color":"#d92332",
+  "icons":[{"src":"./icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

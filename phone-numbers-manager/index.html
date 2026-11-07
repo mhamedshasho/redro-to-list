@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#d92332">
+<meta name="description" content="Redro Phone Numbers Manager">
+<title>Redro Phone Numbers Manager</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="shell">
+<header class="topbar"><a class="brand" href="./"><span class="brandmark">R</span><span>REDRO<small>PHONE NUMBERS</small></span></a><div class="top-actions"><a class="todo-link" href="../">To-Do ↗</a><button id="languageBtn" class="icon-btn" type="button">ع</button><button id="installBtn" class="icon-btn" type="button" hidden>＋</button></div></header>
+<main>
+<section class="hero"><div><p class="eyebrow" data-i18n="eyebrow">YOUR PEOPLE, ONE TAP AWAY</p><h1 data-i18n="headline">Keep every number<br><span>within reach.</span></h1><p class="sub" data-i18n="subtitle">Contacts, groups and follow-up tasks in one private place.</p></div><div class="hero-mark">☎</div></section>
+<section class="stats"><article><b id="totalCount">0</b><span data-i18n="contacts">Contacts</span></article><article><b id="groupCount">0</b><span data-i18n="groups">Groups</span></article><article><b id="openTaskCount">0</b><span data-i18n="openTasks">Open tasks</span></article></section>
+<section class="toolbar"><input id="searchInput" type="search" data-i18n-placeholder="search" placeholder="Search name, number or group"><button id="addBtn" class="primary" type="button"><span>＋</span><span data-i18n="addContact">Add contact</span></button></section>
+<section class="group-section"><div class="section-title"><h2 data-i18n="groups">Groups</h2><button id="allGroupsBtn" class="text-btn" data-i18n="allGroups">All contacts</button></div><div id="groupChips" class="chips"></div></section>
+<section class="contacts-section"><div class="section-title"><h2 data-i18n="savedContacts">Saved contacts</h2><span id="resultsLabel" class="muted"></span></div><div id="contactList" class="contact-list"></div></section>
+<section class="backup-row"><div><strong data-i18n="backupTitle">Your data stays yours</strong><p data-i18n="backupDesc">Export a backup before changing devices.</p></div><button id="manageDataBtn" class="secondary" data-i18n="backup">Backup & restore</button></section>
+</main>
+<footer>REDRO <span>·</span> <span data-i18n="local">Private and stored locally</span></footer>
+</div>
+<dialog id="contactDialog" class="dialog"><form id="contactForm" method="dialog"><div class="dialog-head"><div><p class="eyebrow" data-i18n="contactDetails">CONTACT DETAILS</p><h2 id="contactDialogTitle" data-i18n="newContact">New contact</h2></div><button type="button" class="close-btn" data-close="contactDialog">×</button></div><input id="contactId" type="hidden"><label><span data-i18n="name">Name</span><input id="nameInput" maxlength="90" required autocomplete="name"></label><label><span data-i18n="phone">Phone number</span><input id="phoneInput" type="tel" maxlength="40" required autocomplete="tel"></label><label><span data-i18n="group">Group</span><input id="groupInput" list="groupOptions" maxlength="50" placeholder="e.g. Printing shops"><datalist id="groupOptions"></datalist></label><label><span data-i18n="notes">Notes (optional)</span><textarea id="notesInput" rows="2" maxlength="300"></textarea></label><p id="formError" class="error"></p><div class="dialog-actions"><button type="button" class="secondary" data-close="contactDialog" data-i18n="cancel">Cancel</button><button type="submit" class="primary" data-i18n="save">Save contact</button></div></form></dialog>
+<dialog id="taskDialog" class="dialog"><form id="taskForm" method="dialog"><div class="dialog-head"><div><p class="eyebrow" data-i18n="todoLink">REDRO TO-DO</p><h2 data-i18n="newTask">New follow-up task</h2><p id="taskContactName" class="muted"></p></div><button type="button" class="close-btn" data-close="taskDialog">×</button></div><input id="taskContactId" type="hidden"><label><span data-i18n="taskTitle">What do you need to do?</span><input id="taskTitle" maxlength="160" required></label><div class="field-row"><label><span data-i18n="dueDate">Due date</span><input id="taskDate" type="date"></label><label><span data-i18n="priority">Priority</span><select id="taskPriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></label></div><p class="task-hint" data-i18n="taskHint">This task will appear in Redro To-Do and stay linked to this contact.</p><div class="dialog-actions"><button type="button" class="secondary" data-close="taskDialog" data-i18n="cancel">Cancel</button><button type="submit" class="primary" data-i18n="addToTodo">Add to To-Do</button></div></form></dialog>
+<dialog id="backupDialog" class="dialog"><div class="dialog-head"><div><p class="eyebrow" data-i18n="yourData">YOUR DATA</p><h2 data-i18n="backup">Backup & restore</h2></div><button type="button" class="close-btn" data-close="backupDialog">×</button></div><p class="muted" data-i18n="backupLong">Contacts are stored locally in your browser. Export a backup before switching devices.</p><div class="backup-actions"><button id="exportBtn" class="primary" data-i18n="export">Export backup</button><label class="secondary file-label"><span data-i18n="import">Import backup</span><input id="importInput" type="file" accept=".json,application/json"></label></div><div class="import-mode"><label><input type="radio" name="importMode" value="merge" checked><span data-i18n="merge">Merge with current contacts</span></label><label><input type="radio" name="importMode" value="replace"><span data-i18n="replace">Replace all contacts</span></label></div><p id="backupError" class="error"></p></dialog>
+<div id="toast" class="toast" role="status"></div>
+<script src="./app.js" defer></script>
+</body>
+</html>

@@ -38,7 +38,8 @@ jobs:
       - name: Initialize Android project
         run: |
           npx cap init "Redro Phone Manager" "com.redro.phonemanager" --web-dir=www
-          if [ ! -d android ]; then npx cap add android; fi
+          rm -rf android
+          npx cap add android
           npx cap sync android
           npx capacitor-assets generate --android
       - name: Build APK
